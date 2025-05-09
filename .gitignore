@@ -1,0 +1,5 @@
+*.bin
+*.o
+memo
+make_origin
+init.sh
