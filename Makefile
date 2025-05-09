@@ -1,6 +1,8 @@
 TARGET = kernel.elf
 OBJS = mykernel.o graphics.o font.o hankaku.o newlib_support.o
 
+SRCDIR = src/
+
 HEADDIR = include/
 HEADERS = ${wildcard ${HEADDIR}*.h}
 
