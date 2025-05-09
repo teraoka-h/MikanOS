@@ -1,31 +1,55 @@
-# Variables
+TARGET = kernel.elf
+OBJS = mykernel.o graphics.o font.o hankaku.o newlib_support.o
 
 HEADDIR = include/
 HEADERS = ${wildcard ${HEADDIR}*.h}
 
-SRCDIR = src/
-SRCS = ${wildcard ${SRCDIR}*.cpp}
-
-OBJS = ${wildcard *.o}
-
-TARGET = kernel.elf
+DEPENDS = $(join $(dir $(OBJS)),$(addprefix .,$(notdir $(OBJS:.o=.d))))
 
 LINKFLAGS = -I./include
-CXXFLAGS += -O2 --target=x86_64-elf -fno-exceptions -ffreestanding -mno-red-zone -fno-rtti -std=c++17
-LDFLAGS += --entry KernelMain -z norelro --image-base 0x100000 --static -z separate-code
+CFLAGS   += -O2 -Wall -g --target=x86_64-elf -ffreestanding -mno-red-zone
+CXXFLAGS += -O2 -Wall -g --target=x86_64-elf -ffreestanding -mno-red-zone \
+            -fno-exceptions -fno-rtti -std=c++17
+LDFLAGS  += --entry KernelMain -z norelro --image-base 0x100000 --static
+
 
 .PHONY: all
-all: ${TARGET}
+all: $(TARGET)
 
 .PHONY: clean
 clean:
-	rm ${TARGET}
-	rm ${filter-out hankaku.o, ${OBJS}}
+	rm -rf *.o
 
-# Build commands
+kernel.elf: $(OBJS) Makefile
+	ld.lld $(LDFLAGS) -o kernel.elf $(OBJS) -lc
 
-${TARGET}: ${OBJS}
-	ld.lld ${LDFLAGS} -o $@ ${OBJS}
+%.o: ${SRCDIR}%.cpp Makefile
+	clang++ $(CPPFLAGS) $(CXXFLAGS) ${LINKFLAGS} -c $<
 
-${OBJS}: ${SRCS}
-	clang++ ${CPPFLAGS} ${CXXFLAGS} ${LINKFLAGS} -c $^
+.%.d: ${SRCDIR}%.cpp
+	clang++ $(CPPFLAGS) $(CXXFLAGS) ${LINKFLAGS} -MM $< > $@
+	$(eval OBJ = $(<:.cpp=.o))
+	sed --in-place 's|$(notdir $(OBJ))|$(OBJ)|' $@
+
+%.o: ${SRCDIR}%.c Makefile
+	clang $(CPPFLAGS) $(CFLAGS) -c $<
+
+.%.d: ${SRCDIR}%.c
+	clang $(CPPFLAGS) $(CFLAGS) -MM $< > $@
+	$(eval OBJ = $(<:.c=.o))
+	sed --in-place 's|$(notdir $(OBJ))|$(OBJ)|' $@
+
+hankaku.bin: font/hankaku.txt
+	tools/makefont.py -o $@ $<
+
+hankaku.o: hankaku.bin
+	objcopy -I binary -O elf64-x86-64 -B i386:x86-64 $< $@
+
+.%.d: %.bin
+	touch $@
+
+.PHONY: depends
+depends:
+	$(MAKE) $(DEPENDS)
+
+-include $(DEPENDS)

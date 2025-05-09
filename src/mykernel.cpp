@@ -1,6 +1,6 @@
-#include "kernel.hpp"
+#include "../include/kernel.hpp"
 #include <cstddef>
-
+#include <cstdio>
 
 char pixel_writer_buf[sizeof(RGB8BitPerColorPixelWriter)];
 PixelWriter* pixel_writer;
@@ -13,7 +13,6 @@ void operator delete(void *obj) noexcept {
 
 }
 
-
 extern "C" void KernelMain(const FrameBufferConfig& frame_buffer_config) {
   switch (frame_buffer_config.pixel_format) {
     case kPixelRGBResv8BitPerColor: {
@@ -25,6 +24,7 @@ extern "C" void KernelMain(const FrameBufferConfig& frame_buffer_config) {
       break;
     }
   }
+
 
   for (int x = 0; x < frame_buffer_config.horizontal_resolution; ++x) {
     for (int y = 0; y < frame_buffer_config.vertical_resolution; ++y) {
@@ -43,6 +43,11 @@ extern "C" void KernelMain(const FrameBufferConfig& frame_buffer_config) {
     write_ascii(*pixel_writer, FONT_HORIZONTAL_PIXEL * i, 50, c, BLACK);
   }
   // #@@range_end(write_fonts)
+  write_string(*pixel_writer, 0, 66, "Hello world!", RGB_BLUE);
+
+  char buf[128];
+  std::sprintf(buf, "1 + 2 = %d", 1 + 2);
+  write_string(*pixel_writer, 0, 82, buf, BLACK);
 
   while (1) __asm__("hlt");
 }

@@ -25,3 +25,9 @@ void write_ascii(PixelWriter& writer, int x, int y, char c, const PixelColor& co
     }
   }
 }
+
+void write_string(PixelWriter& writer, int x, int y, const char* str, const PixelColor& color) {
+  for (int i = 0; str[i] != '\0'; i++) {
+    write_ascii(writer, x + FONT_HORIZONTAL_PIXEL * i, y, str[i], color);
+  }
+}
