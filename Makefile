@@ -1,7 +1,12 @@
 TARGET = kernel.elf
-OBJS = mykernel.o graphics.o font.o hankaku.o newlib_support.o
+# OBJS = mykernel.o graphics.o font.o hankaku.o newlib_support.o
 
 SRCDIR = src/
+SRCS = ${wildcard ${SRCDIR}*.*}
+
+FILES = ${notdir ${basename ${SRCS}}}
+OBJS = ${addsuffix .o, ${FILES}}
+OBJS += hankaku.o # 別手段でのビルドで生成するため，直に追加
 
 HEADDIR = include/
 HEADERS = ${wildcard ${HEADDIR}*.h}

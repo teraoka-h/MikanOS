@@ -4,5 +4,6 @@
 #include "frame_buffer_config.hpp"
 #include "graphics.hpp"
 #include "font.hpp"
+#include "console.hpp"
 
 #endif
